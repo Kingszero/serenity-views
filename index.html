@@ -5,824 +5,287 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Serenity Daily Views Monitor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg-base: #020617;
-    --bg-surface: #0E1223;
-    --bg-elevated: #0F172A;
-    --bg-subtle: #1E293B;
-    --bg-card: #0E1223;
-    --border: #1E293B;
-    --border-strong: #334155;
-    --accent: #22C55E;
-    --accent-dim: rgba(34,197,94,0.12);
-    --accent-amber: #F59E0B;
-    --accent-blue: #3B82F6;
-    --accent-red: #EF4444;
-    --text-primary: #F8FAFC;
-    --text-secondary: #CBD5E1;
-    --text-muted: #94A3B8;
-    --text-faint: #475569;
-    --font: 'IBM Plex Sans', 'IBM Plex Sans JP', -apple-system, sans-serif;
-    --sidebar-w: 260px;
-    --radius: 8px;
-    --radius-sm: 6px;
-    --radius-xs: 4px;
-  }
-
-  html { font-family: var(--font); background: var(--bg-base); color: var(--text-primary); height: 100%; }
-  body { display: flex; height: 100vh; overflow: hidden; }
-
-  /* ─── SIDEBAR ─── */
-  .sidebar {
-    width: var(--sidebar-w);
-    min-width: var(--sidebar-w);
-    background: var(--bg-elevated);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-  }
-
-  .sidebar-inner {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .sidebar-inner::-webkit-scrollbar { width: 4px; }
-  .sidebar-inner::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
-
-  /* Logo */
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 4px;
-  }
-  .logo-icon {
-    width: 32px; height: 32px;
-    background: var(--accent);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; font-weight: 700; color: var(--bg-elevated);
-    flex-shrink: 0;
-  }
-  .logo-text { font-size: 16px; font-weight: 700; color: var(--text-primary); line-height: 1; }
-  .logo-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.5px; }
-
-  /* Divider */
-  .divider { height: 1px; background: var(--border); margin: 0 -4px; }
-
-  /* Date Nav */
-  .date-nav {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 4px;
-  }
-  .date-nav-btn {
-    width: 28px; height: 28px;
-    background: var(--bg-subtle);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-size: 14px;
-    flex-shrink: 0;
-    transition: background 0.15s, color 0.15s;
-    user-select: none;
-  }
-  .date-nav-btn:hover { background: var(--border); color: var(--text-primary); }
-  .date-nav-display {
-    flex: 1;
-    text-align: center;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  /* Section header */
-  .section-header {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 0 4px;
-  }
-
-  /* History list */
-  .history-list { display: flex; flex-direction: column; gap: 3px; }
-  .history-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 10px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: background 0.12s;
-    border: 1px solid transparent;
-  }
-  .history-item:hover { background: var(--bg-subtle); }
-  .history-item.active {
-    background: rgba(34,197,94,0.08);
-    border-color: rgba(34,197,94,0.2);
-  }
-  .history-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .history-dot.green { background: var(--accent); }
-  .history-dot.muted { background: var(--text-faint); }
-  .history-date { font-size: 12px; color: var(--text-secondary); flex: 1; }
-  .history-item.active .history-date { color: var(--text-primary); font-weight: 500; }
-  .history-count { font-size: 10px; color: var(--text-muted); background: var(--bg-subtle); padding: 2px 6px; border-radius: 10px; }
-
-  /* Sidebar footer */
-  .sidebar-footer {
-    padding: 16px;
-    border-top: 1px solid var(--border);
-  }
-
-  /* Language toggle */
-  .lang-toggle {
-    display: flex;
-    background: var(--bg-subtle);
-    border-radius: var(--radius-sm);
-    padding: 3px;
-    gap: 3px;
-  }
-  .lang-btn {
-    flex: 1;
-    padding: 7px 0;
-    text-align: center;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.15s;
-    color: var(--text-muted);
-  }
-  .lang-btn.active {
-    background: var(--accent);
-    color: var(--bg-elevated);
-  }
-
-  /* ─── MAIN ─── */
-  .main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-width: 0;
-  }
-
-  /* Top bar */
-  .topbar {
-    padding: 16px 32px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-    background: var(--bg-base);
-  }
-  .topbar-left { display: flex; align-items: center; gap: 12px; }
-  .topbar-date {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    background: var(--bg-subtle);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-  }
-  .topbar-date-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 2px; flex-shrink: 0; }
-  .topbar-date-text { font-size: 14px; font-weight: 600; color: var(--text-primary); }
-  .topbar-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .topbar-badge.lang-cn { background: var(--accent); color: var(--bg-elevated); }
-  .topbar-badge.lang-en { background: var(--accent-blue); color: white; }
-  .topbar-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.6; }
-
-  .topbar-right { display: flex; align-items: center; gap: 12px; }
-  .count-badge {
-    font-size: 12px;
-    color: var(--text-muted);
-    padding: 4px 10px;
-    background: var(--bg-subtle);
-    border-radius: 20px;
-    border: 1px solid var(--border);
-  }
-  .count-badge strong { color: var(--text-primary); font-weight: 600; }
-
-  /* Content scroll area */
-  .content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 28px 32px 40px;
-  }
-  .content::-webkit-scrollbar { width: 6px; }
-  .content::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
-  .content::-webkit-scrollbar-track { background: transparent; }
-
-  /* Views stream */
-  .views-stream { display: flex; flex-direction: column; gap: 16px; max-width: 900px; }
-
-  /* View item */
-  .view-item {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 22px 24px;
-    transition: border-color 0.15s;
-    position: relative;
-  }
-  .view-item:hover { border-color: var(--border-strong); }
-
-  .view-item-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 14px;
-    gap: 12px;
-  }
-  .view-item-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .view-seq {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--accent);
-    background: var(--accent-dim);
-    padding: 2px 8px;
-    border-radius: 3px;
-    letter-spacing: 0.5px;
-    font-variant-numeric: tabular-nums;
-  }
-  .view-topic-tag {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-muted);
-    background: var(--bg-subtle);
-    padding: 2px 8px;
-    border-radius: 3px;
-    border: 1px solid var(--border);
-  }
-  .view-time {
-    font-size: 12px;
-    color: var(--text-faint);
-    flex-shrink: 0;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .view-body {
-    font-size: 14px;
-    line-height: 1.85;
-    color: var(--text-secondary);
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .view-body strong { color: var(--text-primary); font-weight: 600; }
-
-  .view-item-footer {
-    margin-top: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .tag {
-    font-size: 11px;
-    color: var(--text-muted);
-    background: var(--bg-subtle);
-    padding: 3px 8px;
-    border-radius: 3px;
-    border: 1px solid var(--border);
-  }
-  .tag.green { color: var(--accent); border-color: rgba(34,197,94,0.25); background: rgba(34,197,94,0.06); }
-  .tag.amber { color: var(--accent-amber); border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.06); }
-  .tag.blue { color: var(--accent-blue); border-color: rgba(59,130,246,0.25); background: rgba(59,130,246,0.06); }
-  .tag.red { color: var(--accent-red); border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.06); }
-
-  /* Accent bar on left */
-  .view-item::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 18px; bottom: 18px;
-    width: 3px;
-    background: transparent;
-    border-radius: 0 2px 2px 0;
-    transition: background 0.15s;
-  }
-  .view-item.bullish::before { background: var(--accent); }
-  .view-item.bearish::before { background: var(--accent-red); }
-  .view-item.neutral::before { background: var(--accent-amber); }
-  .view-item.info::before { background: var(--accent-blue); }
-
-  /* Empty state */
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 300px;
-    gap: 12px;
-    color: var(--text-muted);
-  }
-  .empty-state-icon { font-size: 40px; opacity: 0.3; }
-  .empty-state-text { font-size: 14px; }
-
-  /* Loading */
-  .loading-bar {
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    animation: shimmer 1.5s infinite;
-    margin-bottom: 24px;
-    border-radius: 2px;
-  }
-  @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
-
-  /* Scrollback to top btn */
-  .scroll-top {
-    position: fixed;
-    right: 24px;
-    bottom: 32px;
-    width: 36px; height: 36px;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-strong);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-size: 16px;
-    opacity: 0;
-    transition: opacity 0.2s;
-    z-index: 100;
-  }
-  .scroll-top.visible { opacity: 1; }
-  .scroll-top:hover { color: var(--text-primary); background: var(--bg-subtle); }
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg-base:#020617;--bg-surface:#0E1223;--bg-elevated:#0F172A;--bg-subtle:#1E293B;
+--border:#1E293B;--border-strong:#334155;
+--accent:#22C55E;--accent-dim:rgba(34,197,94,.12);--accent-amber:#F59E0B;--accent-blue:#3B82F6;--accent-red:#EF4444;
+--text-primary:#F8FAFC;--text-secondary:#CBD5E1;--text-muted:#94A3B8;--text-faint:#475569;
+--font:'IBM Plex Sans',-apple-system,sans-serif;--sidebar-w:260px;--radius:8px;--radius-sm:6px
+}
+html{font-family:var(--font);background:var(--bg-base);color:var(--text-primary);height:100%}
+body{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--bg-elevated);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100%;overflow:hidden}
+.sidebar-inner{flex:1;overflow-y:auto;padding:24px 16px;display:flex;flex-direction:column;gap:20px}
+.sidebar-inner::-webkit-scrollbar{width:4px}
+.sidebar-inner::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:2px}
+.logo{display:flex;align-items:center;gap:10px;padding:0 4px}
+.logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--bg-elevated);flex-shrink:0}
+.logo-text{font-size:16px;font-weight:700;color:var(--text-primary);line-height:1}
+.logo-sub{font-size:10px;color:var(--text-muted);margin-top:2px;letter-spacing:.5px}
+.divider{height:1px;background:var(--border);margin:0 -4px}
+.date-nav{display:flex;align-items:center;gap:8px;padding:0 4px}
+.date-nav-btn{width:28px;height:28px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:14px;flex-shrink:0;transition:background .15s,color .15s;user-select:none}
+.date-nav-btn:hover{background:var(--border);color:var(--text-primary)}
+.date-nav-display{flex:1;text-align:center;font-size:13px;font-weight:600;color:var(--text-primary)}
+.section-header{font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;padding:0 4px}
+.history-list{display:flex;flex-direction:column;gap:3px}
+.history-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:background .12s;border:1px solid transparent}
+.history-item:hover{background:var(--bg-subtle)}
+.history-item.active{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.2)}
+.history-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.history-dot.green{background:var(--accent)}
+.history-dot.muted{background:var(--text-faint)}
+.history-date{font-size:12px;color:var(--text-secondary);flex:1}
+.history-item.active .history-date{color:var(--text-primary);font-weight:500}
+.history-count{font-size:10px;color:var(--text-muted);background:var(--bg-subtle);padding:2px 6px;border-radius:10px}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+.lang-toggle{display:flex;background:var(--bg-subtle);border-radius:var(--radius-sm);padding:3px;gap:3px}
+.lang-btn{flex:1;padding:7px 0;text-align:center;font-size:12px;font-weight:600;border-radius:4px;cursor:pointer;transition:all .15s;color:var(--text-muted)}
+.lang-btn.active{background:var(--accent);color:var(--bg-elevated)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{padding:16px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg-base)}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-date{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg-subtle);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.topbar-date-dot{width:8px;height:8px;background:var(--accent);border-radius:2px;flex-shrink:0}
+.topbar-date-text{font-size:14px;font-weight:600;color:var(--text-primary)}
+.topbar-badge{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.topbar-badge.lang-cn{background:var(--accent);color:var(--bg-elevated)}
+.topbar-badge.lang-en{background:var(--accent-blue);color:#fff}
+.topbar-badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.count-badge{font-size:12px;color:var(--text-muted);padding:4px 10px;background:var(--bg-subtle);border-radius:20px;border:1px solid var(--border)}
+.count-badge strong{color:var(--text-primary);font-weight:600}
+.content{flex:1;overflow-y:auto;padding:28px 32px 40px}
+.content::-webkit-scrollbar{width:6px}
+.content::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:3px}
+.content::-webkit-scrollbar-track{background:transparent}
+.views-stream{display:flex;flex-direction:column;gap:16px;max-width:900px}
+.view-item{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px;position:relative}
+.view-item:hover{border-color:var(--border-strong)}
+.view-item-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:12px}
+.view-item-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.view-seq{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-dim);padding:2px 8px;border-radius:3px;letter-spacing:.5px}
+.view-topic-tag{font-size:11px;font-weight:500;color:var(--text-muted);background:var(--bg-subtle);padding:2px 8px;border-radius:3px;border:1px solid var(--border)}
+.view-time{font-size:12px;color:var(--text-faint);flex-shrink:0}
+.view-body{font-size:14px;line-height:1.85;color:var(--text-secondary);white-space:pre-wrap;word-break:break-word}
+.view-body strong{color:var(--text-primary);font-weight:600}
+.view-item-footer{margin-top:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tag{font-size:11px;color:var(--text-muted);background:var(--bg-subtle);padding:3px 8px;border-radius:3px;border:1px solid var(--border)}
+.tag.green{color:var(--accent);border-color:rgba(34,197,94,.25);background:rgba(34,197,94,.06)}
+.tag.amber{color:var(--accent-amber);border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.06)}
+.tag.blue{color:var(--accent-blue);border-color:rgba(59,130,246,.25);background:rgba(59,130,246,.06)}
+.tag.red{color:var(--accent-red);border-color:rgba(239,68,68,.25);background:rgba(239,68,68,.06)}
+.view-item::before{content:'';position:absolute;left:0;top:18px;bottom:18px;width:3px;background:transparent;border-radius:0 2px 2px 0}
+.view-item.bullish::before{background:var(--accent)}
+.view-item.bearish::before{background:var(--accent-red)}
+.view-item.neutral::before{background:var(--accent-amber)}
+.view-item.info::before{background:var(--accent-blue)}
+.view-item.bullish .view-seq{color:var(--accent);background:rgba(34,197,94,.12)}
+.view-item.bearish .view-seq{color:var(--accent-red);background:rgba(239,68,68,.12)}
+.view-item.neutral .view-seq{color:var(--accent-amber);background:rgba(245,158,11,.12)}
+.view-item.info .view-seq{color:var(--accent-blue);background:rgba(59,130,246,.12)}
+.scroll-top{position:fixed;right:24px;bottom:32px;width:36px;height:36px;background:var(--bg-elevated);border:1px solid var(--border-strong);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:16px;opacity:0;transition:opacity .2s;z-index:100}
+.scroll-top.visible{opacity:1}
+.scroll-top:hover{color:var(--text-primary);background:var(--bg-subtle)}
 </style>
 </head>
 <body>
 
-<!-- ═══ SIDEBAR ═══ -->
 <aside class="sidebar">
-  <div class="sidebar-inner">
-    <!-- Logo -->
-    <div class="logo">
-      <div class="logo-icon">S</div>
-      <div>
-        <div class="logo-text">Serenity</div>
-        <div class="logo-sub">DAILY VIEWS MONITOR</div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- Date navigation -->
-    <div class="date-nav">
-      <div class="date-nav-btn" onclick="changeDate(-1)">&#8592;</div>
-      <div class="date-nav-display" id="sidebarDate">2026.06.04</div>
-      <div class="date-nav-btn" onclick="changeDate(1)">&#8594;</div>
-    </div>
-
-    <!-- History -->
-    <div class="section-header">Past Views</div>
-    <div class="history-list" id="historyList">
-      <!-- generated by JS -->
-    </div>
-  </div>
-
-  <!-- Footer: language toggle -->
-  <div class="sidebar-footer">
-    <div class="lang-toggle">
-      <div class="lang-btn active" id="btnCN" onclick="setLang('cn')">中文</div>
-      <div class="lang-btn" id="btnEN" onclick="setLang('en')">English</div>
-    </div>
-  </div>
+<div class="sidebar-inner">
+<div class="logo"><div class="logo-icon">S</div><div><div class="logo-text">Serenity</div><div class="logo-sub">DAILY VIEWS MONITOR</div></div></div>
+<div class="divider"></div>
+<div class="date-nav">
+<div class="date-nav-btn" onclick="changeDate(-1)">&#8592;</div>
+<div class="date-nav-display" id="sidebarDate">2026.06.04</div>
+<div class="date-nav-btn" onclick="changeDate(1)">&#8594;</div>
+</div>
+<div class="section-header">Past Views</div>
+<div class="history-list" id="historyList"></div>
+</div>
+<div class="sidebar-footer">
+<div class="lang-toggle">
+<div class="lang-btn active" id="btnCN" onclick="setLang('cn')">中文</div>
+<div class="lang-btn" id="btnEN" onclick="setLang('en')">English</div>
+</div>
+</div>
 </aside>
 
-<!-- ═══ MAIN ═══ -->
 <main class="main">
-  <!-- Top bar -->
-  <div class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-date">
-        <div class="topbar-date-dot"></div>
-        <div class="topbar-date-text" id="topbarDate">2026年6月4日 · 周四</div>
-      </div>
-      <div class="topbar-badge lang-cn" id="langBadge">
-        <span class="topbar-badge-dot"></span>
-        <span id="langBadgeText">中文</span>
-      </div>
-    </div>
-    <div class="topbar-right">
-      <div class="count-badge">共 <strong id="viewCount">0</strong> 条观点</div>
-      <div id="debugInfo" style="font-size:11px;color:#EF4444;max-width:300px;text-align:right;line-height:1.4;">WAITING...</div>
-    </div>
-  </div>
+<div class="topbar">
+<div class="topbar-left">
+<div class="topbar-date"><div class="topbar-date-dot"></div><div class="topbar-date-text" id="topbarDate">2026年6月4日 · 周四</div></div>
+<div class="topbar-badge lang-cn" id="langBadge"><span class="topbar-badge-dot"></span><span id="langBadgeText">中文</span></div>
+</div>
+<div class="topbar-right"><div class="count-badge">共 <strong id="viewCount">7</strong> 条观点</div></div>
+</div>
+<div class="content" id="contentArea">
+<div class="views-stream" id="viewsStream">
 
-  <!-- Views stream -->
-  <div class="content" id="contentArea">
-    <div class="views-stream" id="viewsStream">
-      <!-- generated by JS -->
-    </div>
-  </div>
-</main>
-
-<!-- Scroll to top -->
-<div class="scroll-top" id="scrollTopBtn" onclick="scrollToTop()">&#8593;</div>
-
-<script>
-// ═══════════════════════════════════════════════
-// DATA — Complete original views, no summarization
-// ═══════════════════════════════════════════════
-const DATA = {
-  "2026-06-04": {
-    dates: { cn: "2026年6月4日 · 周四", en: "Thursday, June 4, 2026" },
-    views: [
-      {
-        seq: "01", time: "08:15 EST",
-        topic: { cn: "AI基础设施", en: "AI Infrastructure" },
-        sentiment: "bullish",
-        tags: { cn: ["超配", "买入"], en: ["Overweight", "Buy"] },
-        body: {
-          cn: `AI基础设施板块进入新一轮资本开支超级周期。超大规模云厂商（Microsoft Azure、Google Cloud、AWS）在Q2的GPU集群采购量显著加速，三家合计CapEx指引环比提升约35%。这一趋势直接利好上游芯片和基础设施供应链。
+<!-- VIEW 01 -->
+<div class="view-item bullish">
+<div class="view-item-header"><div class="view-item-meta"><span class="view-seq">01</span><span class="view-topic-tag">AI基础设施</span></div><div class="view-time">08:15 EST</div></div>
+<div class="view-body">AI基础设施板块进入新一轮资本开支超级周期。超大规模云厂商（Microsoft Azure、Google Cloud、AWS）在Q2的GPU集群采购量显著加速，三家合计CapEx指引环比提升约35%。这一趋势直接利好上游芯片和基础设施供应链。
 
 重点关注NVDA GB200 NVL72机架的交付节奏——当前积压订单已延伸至2027年Q1，供需缺口将维持高位。AVGO的定制ASIC（特别是Google TPU和Meta MTIA）已开始侵蚀NVDA在推理市场的份额，预计FY2026 AVGO AI营收贡献将突破200亿美元。
 
-数据中心电力和冷却基础设施成为最紧迫的制约瓶颈。Vertiv（VRT）、Eaton（ETN）、Schneider Electric等传统基础设施供应商的估值重评空间仍被市场低估。建议在AI产业链中维持满仓配置，短期以NVDA+AVGO为核心双引擎。`,
-          en: `The AI infrastructure sector is entering a new capital expenditure supercycle. Hyperscalers (Microsoft Azure, Google Cloud, AWS) significantly accelerated GPU cluster procurement in Q2, with combined CapEx guidance up ~35% quarter-over-quarter. This directly benefits upstream chip and infrastructure supply chains.
+数据中心电力和冷却基础设施成为最紧迫的制约瓶颈。Vertiv（VRT）、Eaton（ETN）、Schneider Electric等传统基础设施供应商的估值重评空间仍被市场低估。建议在AI产业链中维持满仓配置，短期以NVDA+AVGO为核心双引擎。</div>
+<div class="view-item-footer"><span class="tag green">超配</span><span class="tag green">买入</span></div>
+</div>
 
-Key focus: NVDA GB200 NVL72 rack delivery pace — current backlog extends to Q1 2027, keeping supply/demand gap elevated. AVGO's custom ASICs (specifically Google TPU and Meta MTIA) have begun eroding NVDA's share in inference markets; FY2026 AVGO AI revenue contribution is projected to exceed $20B.
-
-Data center power and cooling infrastructure has become the most critical bottleneck. The valuation re-rating potential of traditional infra suppliers — Vertiv (VRT), Eaton (ETN), Schneider Electric — remains underappreciated by the market. Recommend maintaining full allocation across AI supply chain, with NVDA+AVGO as the core dual-engine for near-term positioning.`
-        }
-      },
-      {
-        seq: "02", time: "08:47 EST",
-        topic: { cn: "半导体", en: "Semiconductors" },
-        sentiment: "bullish",
-        tags: { cn: ["AVGO", "定制ASIC", "超配"], en: ["AVGO", "Custom ASIC", "Overweight"] },
-        body: {
-          cn: `AVGO定制芯片业务是当前半导体板块中确定性最高的结构性机会。两大定制ASIC客户（Google、Meta）均已公开承诺大幅扩大芯片采购规模，形成多年期的稳定收入能见度。
+<!-- VIEW 02 -->
+<div class="view-item bullish">
+<div class="view-item-header"><div class="view-item-meta"><span class="view-seq">02</span><span class="view-topic-tag">半导体</span></div><div class="view-time">08:47 EST</div></div>
+<div class="view-body">AVGO定制芯片业务是当前半导体板块中确定性最高的结构性机会。两大定制ASIC客户（Google、Meta）均已公开承诺大幅扩大芯片采购规模，形成多年期的稳定收入能见度。
 
 AVGO的护城河在于其独特的co-design能力——能深度嵌入客户的系统架构，形成极高的迁移成本。相比NVDA的通用GPU，定制ASIC在特定推理工作负载下性能功耗比提升约3-5倍，这是云厂商为何愿意支付溢价的根本原因。
 
-从估值角度看，AVGO当前24倍NTM P/E相对其25-28%的EPS增速中枢而言并不贵，PEG约0.9x。FY2026财报季（9月）将是重要催化剂。建议以当前价格积极买入，目标价$250，止损设于$195。`,
-          en: `AVGO's custom silicon business represents the highest-conviction structural opportunity in semiconductors right now. Both major custom ASIC customers (Google, Meta) have publicly committed to significantly scaling chip procurement, providing multi-year revenue visibility.
+从估值角度看，AVGO当前24倍NTM P/E相对其25-28%的EPS增速中枢而言并不贵，PEG约0.9x。FY2026财报季（9月）将是重要催化剂。建议以当前价格积极买入，目标价$250，止损设于$195。</div>
+<div class="view-item-footer"><span class="tag blue">AVGO</span><span class="tag blue">定制ASIC</span><span class="tag green">超配</span></div>
+</div>
 
-AVGO's moat lies in its unique co-design capability — deeply embedded in customers' system architecture, creating very high switching costs. Compared to NVDA's general-purpose GPUs, custom ASICs deliver ~3-5x better performance-per-watt for specific inference workloads, which is why hyperscalers are willing to pay a premium.
-
-Valuation: AVGO's current 24x NTM P/E is not expensive relative to its 25-28% EPS growth trajectory, implying a PEG of ~0.9x. FY2026 earnings season (September) is a major catalyst. Recommend aggressive accumulation at current levels, target price $250, stop-loss at $195.`
-        }
-      },
-      {
-        seq: "03", time: "09:12 EST",
-        topic: { cn: "网络安全", en: "Cybersecurity" },
-        sentiment: "neutral",
-        tags: { cn: ["CRWD", "关注", "等待回调"], en: ["CRWD", "Watch", "Wait for Pullback"] },
-        body: {
-          cn: `CRWD在端点安全和云安全领域的AI原生优势是真实且持续扩大的。Falcon平台的AR（Annual Recurring Revenue）模组渗透率持续提升，净留存率维持在120%以上，客户粘性极强。
+<!-- VIEW 03 -->
+<div class="view-item neutral">
+<div class="view-item-header"><div class="view-item-meta"><span class="view-seq">03</span><span class="view-topic-tag">网络安全</span></div><div class="view-time">09:12 EST</div></div>
+<div class="view-body">CRWD在端点安全和云安全领域的AI原生优势是真实且持续扩大的。Falcon平台的AR（Annual Recurring Revenue）模组渗透率持续提升，净留存率维持在120%以上，客户粘性极强。
 
 然而，当前估值是最大的约束：CRWD交易在约16x NTM EV/Revenue和约85x NTM P/E，已充分反映增长预期。对于风险厌恶型投资者，当前位置的赔率并不理想。
 
 等待两个更好的入场窗口：1）宏观情绪收紧导致的杀估值，目标等待回撤至$300-320区间；2）Q3财报（11月）超预期后的动量确认。对于长期持有者，可维持现有仓位。对于想建仓的新资金，建议等待。
 
-同时关注竞争格局：MSFT Defender的能力提升是长期风险点，需要持续跟踪。`,
-          en: `CRWD's AI-native advantages in endpoint and cloud security are real and continue to expand. Falcon platform AR (Annual Recurring Revenue) module penetration is rising steadily, with net retention above 120% — exceptional customer stickiness.
+同时关注竞争格局：MSFT Defender的能力提升是长期风险点，需要持续跟踪。</div>
+<div class="view-item-footer"><span class="tag blue">CRWD</span><span class="tag">关注</span><span class="tag">等待回调</span></div>
+</div>
 
-However, valuation is the binding constraint: CRWD trades at ~16x NTM EV/Revenue and ~85x NTM P/E, which fully reflects growth expectations. For risk-averse investors, current risk/reward is not compelling.
+<!-- VIEW 04 -->
+<div class="view-item neutral">
+<div class="view-item-header"><div class="view-item-meta"><span class="view-seq">04</span><span class="view-topic-tag">宏观与利率</span></div><div class="view-time">09:45 EST</div></div>
+<div class="view-body">6月宏观日历密集，需要格外警惕情绪面的短期扰动：
 
-Two better entry windows: 1) Macro-driven multiple compression — target a pullback to the $300-320 range; 2) Post-Q3 earnings (November) momentum confirmation on an upside surprise. Long-term holders can maintain positions. New capital should wait.
+<strong>6月11日 — 5月CPI数据</strong>：市场共识预期核心CPI环比+0.3%，若实际数据超预期（尤其是服务通胀粘性），可能触发利率上行预期，对高倍数成长股构成估值压力。
 
-Also monitor competitive dynamics: MSFT Defender's improving capabilities represent a long-term risk factor requiring ongoing tracking.`
-        }
-      },
-      {
-        seq: "04", time: "09:45 EST",
-        topic: { cn: "宏观与利率", en: "Macro & Rates" },
-        sentiment: "neutral",
-        tags: { cn: ["CPI", "FOMC", "情绪扰动"], en: ["CPI", "FOMC", "Sentiment Risk"] },
-        body: {
-          cn: `6月宏观日历密集，需要格外警惕情绪面的短期扰动：
+<strong>6月11-12日 — FOMC会议</strong>：市场当前定价9月降息概率约65%。若鲍威尔在新闻发布会上发出"更长时间更高利率"的信号，将对NDX估值中枢造成5-8%的压制。
 
-**6月11日 — 5月CPI数据**：市场共识预期核心CPI环比+0.3%，若实际数据超预期（尤其是服务通胀粘性），可能触发利率上行预期，对高倍数成长股构成估值压力。
+<strong>操作建议</strong>：不建议在6月11日前后大幅加仓。持有核心仓位（NVDA/AVGO/CRWD），适当降低资金使用率至80%，保留20%现金应对波动性带来的买入机会。宏观扰动是暂时的，AI产业趋势不变。
 
-**6月11-12日 — FOMC会议**：市场当前定价9月降息概率约65%。若鲍威尔在新闻发布会上发出"更长时间更高利率"的信号，将对NDX估值中枢造成5-8%的压制。
+<strong>值得注意的对冲工具</strong>：TLT反向ETF（TBF）或SPY Put spread可以对冲短期系统性风险，成本相对低廉。</div>
+<div class="view-item-footer"><span class="tag amber">CPI</span><span class="tag amber">FOMC</span><span class="tag amber">情绪扰动</span></div>
+</div>
 
-**操作建议**：不建议在6月11日前后大幅加仓。持有核心仓位（NVDA/AVGO/CRWD），适当降低资金使用率至80%，保留20%现金应对波动性带来的买入机会。宏观扰动是暂时的，AI产业趋势不变。
+<!-- VIEW 05 -->
+<div class="view-item bullish">
+<div class="view-item-header"><div class="view-item-meta"><span class="view-seq">05</span><span class="view-topic-tag">云计算</span></div><div class="view-time">10:20 EST</div></div>
+<div class="view-body">三大云厂商的AI货币化进程在Q2出现了明显加速的信号。
 
-**值得注意的对冲工具**：TLT反向ETF（TBF）或SPY Put spread可以对冲短期系统性风险，成本相对低廉。`,
-          en: `The June macro calendar is dense — monitor short-term sentiment disruptions closely:
+<strong>Microsoft Azure</strong>：Copilot M365商业套件渗透率超预期，企业客户AI附加席位采用率环比提升约40%。Azure AI Foundry的API调用量在Q2同比增长超过3倍，预计带动Azure增速重新加速至30%+。MSFT是AI货币化最清晰、可见度最高的标的之一。
 
-**June 11 — May CPI Data**: Market consensus expects core CPI +0.3% m/m. An upside surprise (especially persistent services inflation) could trigger rate-rise expectations, pressuring high-multiple growth stock valuations.
+<strong>Google Cloud</strong>：Gemini API的外部调用量在Q1财报中已超预期，Vertex AI平台上的企业工作负载迁移加速。YouTube广告+Cloud的双引擎组合使GOOGL估值在大型科技股中最具吸引力，当前约18x NTM P/E，PEG &lt;0.7x。
 
-**June 11-12 — FOMC Meeting**: Market currently prices ~65% probability of September rate cut. If Powell signals "higher for longer" at the press conference, expect 5-8% compression on NDX valuation multiples.
+<strong>AWS</strong>：Bedrock平台已跑出显著的企业客户粘性，Q2 re:Invent之前AI服务收入贡献将首次超过10%。
 
-**Tactical guidance**: Avoid significant position increases around June 11. Hold core positions (NVDA/AVGO/CRWD), reduce capital utilization to ~80%, retain 20% cash to deploy on volatility-driven opportunities. Macro disruptions are temporary; the AI secular trend is intact.
+综合来看，云厂商是AI产业链中兼具增长确定性和估值合理性的核心配置，建议三家均超配。</div>
+<div class="view-item-footer"><span class="tag blue">MSFT</span><span class="tag blue">AMZN</span><span class="tag blue">GOOGL</span><span class="tag green">超配</span></div>
+</div>
 
-**Hedging tools worth considering**: TLT inverse ETF (TBF) or SPY put spreads offer cost-effective near-term systemic risk hedges.`
-        }
-      },
-      {
-        seq: "05", time: "10:20 EST",
-        topic: { cn: "云计算", en: "Cloud Computing" },
-        sentiment: "bullish",
-        tags: { cn: ["MSFT", "AMZN", "GOOGL", "超配"], en: ["MSFT", "AMZN", "GOOGL", "Overweight"] },
-        body: {
-          cn: `三大云厂商的AI货币化进程在Q2出现了明显加速的信号。
-
-**Microsoft Azure**：Copilot M365商业套件渗透率超预期，企业客户AI附加席位采用率环比提升约40%。Azure AI Foundry的API调用量在Q2同比增长超过3倍，预计带动Azure增速重新加速至30%+。MSFT是AI货币化最清晰、可见度最高的标的之一。
-
-**Google Cloud**：Gemini API的外部调用量在Q1财报中已超预期，Vertex AI平台上的企业工作负载迁移加速。YouTube广告+Cloud的双引擎组合使GOOGL估值在大型科技股中最具吸引力，当前约18x NTM P/E，PEG <0.7x。
-
-**AWS**：Bedrock平台已跑出显著的企业客户粘性，Q2 re:Invent之前AI服务收入贡献将首次超过10%。
-
-综合来看，云厂商是AI产业链中兼具增长确定性和估值合理性的核心配置，建议三家均超配。`,
-          en: `All three major cloud providers showed clear signs of accelerating AI monetization in Q2.
-
-**Microsoft Azure**: Copilot M365 commercial suite penetration exceeded expectations, with enterprise AI add-on seat adoption up ~40% q/q. Azure AI Foundry API call volume grew 3x+ y/y in Q2, expected to re-accelerate Azure growth to 30%+. MSFT remains one of the clearest, highest-visibility AI monetization plays.
-
-**Google Cloud**: Gemini API external call volume already beat expectations in Q1 earnings; enterprise workload migration onto Vertex AI is accelerating. The YouTube ads + Cloud dual-engine combination makes GOOGL the most attractively valued mega-cap tech, currently ~18x NTM P/E with PEG <0.7x.
-
-**AWS**: Bedrock platform is showing meaningful enterprise stickiness; AI services revenue contribution will exceed 10% for the first time before Q2 re:Invent.
-
-Overall, cloud providers offer the best combination of growth certainty and reasonable valuation in the AI supply chain. Recommend overweight across all three.`
-        }
-      },
-      {
-        seq: "06", time: "11:05 EST",
-        topic: { cn: "能源与基础设施", en: "Energy & Infrastructure" },
-        sentiment: "bullish",
-        tags: { cn: ["VRT", "ETN", "数据中心电力", "主题性机会"], en: ["VRT", "ETN", "DC Power", "Thematic"] },
-        body: {
-          cn: `数据中心电力需求正在创造一个被主流市场系统性低估的投资机会——传统能源基础设施供应商的结构性重评。
+<!-- VIEW 06 -->
+<div class="view-item bullish">
+<div class="view-item-header"><div class="view-item-meta"><span class="view-seq">06</span><span class="view-topic-tag">能源与基础设施</span></div><div class="view-time">11:05 EST</div></div>
+<div class="view-body">数据中心电力需求正在创造一个被主流市场系统性低估的投资机会——传统能源基础设施供应商的结构性重评。
 
 核心数据：全球数据中心电力消耗预计到2030年将达到约1000 TWh，约占全球总用电量的3.5%。其中，AI推理工作负载是增长最快的部分，液冷系统的采用将从当前的不足5%上升至2027年的约25%。
 
-**Vertiv（VRT）**：液冷和热管理解决方案的直接受益者，订单积压已达历史高位，FY2026收入指引上调可能性大。但需注意当前估值已有所扩张（约35x NTM P/E），需要持续的业绩兑现来支撑。
+<strong>Vertiv（VRT）</strong>：液冷和热管理解决方案的直接受益者，订单积压已达历史高位，FY2026收入指引上调可能性大。但需注意当前估值已有所扩张（约35x NTM P/E），需要持续的业绩兑现来支撑。
 
-**核电的重新崛起**：微软/Google与核电运营商签署的长期PPA合同预示着核电作为数据中心"清洁基荷电力"的战略地位提升。CEG（Constellation Energy）、VST（Vistra）值得关注。
+<strong>核电的重新崛起</strong>：微软/Google与核电运营商签署的长期PPA合同预示着核电作为数据中心"清洁基荷电力"的战略地位提升。CEG（Constellation Energy）、VST（Vistra）值得关注。
 
-建议在AI基础设施配置中纳入5-10%的能源基础设施敞口，作为对冲AI算力板块高估值的防御性补充。`,
-          en: `Data center power demand is creating a systematically underappreciated investment opportunity in the structural re-rating of traditional energy infrastructure suppliers.
+建议在AI基础设施配置中纳入5-10%的能源基础设施敞口，作为对冲AI算力板块高估值的防御性补充。</div>
+<div class="view-item-footer"><span class="tag blue">VRT</span><span class="tag blue">ETN</span><span class="tag amber">数据中心电力</span><span class="tag green">主题性机会</span></div>
+</div>
 
-Key data: Global data center power consumption is projected to reach ~1,000 TWh by 2030, roughly 3.5% of total global electricity. AI inference workloads are the fastest-growing segment; liquid cooling adoption will rise from under 5% today to ~25% by 2027.
+<!-- VIEW 07 -->
+<div class="view-item info">
+<div class="view-item-header"><div class="view-item-meta"><span class="view-seq">07</span><span class="view-topic-tag">组合管理</span></div><div class="view-time">13:30 EST</div></div>
+<div class="view-body">当前组合状态回顾与仓位指引（截至2026年6月4日）：
 
-**Vertiv (VRT)**: Direct beneficiary of liquid cooling and thermal management; order backlog at all-time highs; FY2026 revenue guidance upside likely. Note: valuation has expanded (~35x NTM P/E), requiring continued execution to sustain.
-
-**Nuclear power's resurgence**: Long-term PPA contracts between Microsoft/Google and nuclear operators signal nuclear power's rising strategic importance as "clean baseload" for data centers. CEG (Constellation Energy) and VST (Vistra) merit attention.
-
-Recommend allocating 5-10% of AI infrastructure exposure to energy infrastructure as a defensive complement hedging against elevated valuations in the AI compute segment.`
-        }
-      },
-      {
-        seq: "07", time: "13:30 EST",
-        topic: { cn: "组合管理", en: "Portfolio Management" },
-        sentiment: "info",
-        tags: { cn: ["仓位管理", "风险控制", "操作指引"], en: ["Position Sizing", "Risk", "Tactical"] },
-        body: {
-          cn: `当前组合状态回顾与仓位指引（截至2026年6月4日）：
-
-**核心仓位（合计约55%）**
+<strong>核心仓位（合计约55%）</strong>
 - NVDA：20% — AI算力核心，持续持有，不追高
 - AVGO：15% — 定制ASIC主线，逢回调加仓
 - MSFT：12% — AI货币化确定性最高，长期持有
 - GOOGL：8% — 低估值补涨逻辑，适量配置
 
-**主题卫星仓位（合计约25%）**
+<strong>主题卫星仓位（合计约25%）</strong>
 - VRT：5% — AI基础设施能源主题
 - CEG：3% — 核电/清洁基荷电力
 - ARM：7% — AI边缘推理/移动端算力，长期逻辑清晰但波动大
 - ANET：5% — AI数据中心网络，确定性强
 - DELL：5% — AI服务器整机受益，估值便宜
 
-**现金储备：20%** — 应对6月宏观扰动，等待更好的买入窗口
+<strong>现金储备：20%</strong> — 应对6月宏观扰动，等待更好的买入窗口
 
-**风险纪律**：任何单一标的不超过20%上限；组合Beta控制在1.2以内；止损线设置在组合回撤-10%时强制减仓至防御配置。
+<strong>风险纪律</strong>：任何单一标的不超过20%上限；组合Beta控制在1.2以内；止损线设置在组合回撤-10%时强制减仓至防御配置。
 
-下次仓位回顾节点：6月12日（FOMC后）。`,
-          en: `Current portfolio status review and positioning guide (as of June 4, 2026):
+下次仓位回顾节点：6月12日（FOMC后）。</div>
+<div class="view-item-footer"><span class="tag">仓位管理</span><span class="tag red">风险控制</span><span class="tag">操作指引</span></div>
+</div>
 
-**Core Holdings (~55% total)**
-- NVDA: 20% — AI compute core, hold, no chasing
-- AVGO: 15% — Custom ASIC primary theme, add on pullbacks
-- MSFT: 12% — Highest AI monetization certainty, long-term hold
-- GOOGL: 8% — Low-valuation catch-up thesis, moderate allocation
+</div>
+</div>
+</main>
 
-**Thematic Satellite Positions (~25% total)**
-- VRT: 5% — AI infrastructure energy theme
-- CEG: 3% — Nuclear / clean baseload power
-- ARM: 7% — AI edge inference / mobile compute, clear long-term logic but high volatility
-- ANET: 5% — AI datacenter networking, high conviction
-- DELL: 5% — AI server beneficiary, cheap valuation
+<div class="scroll-top" id="scrollTopBtn" onclick="scrollToTop()">&#8593;</div>
 
-**Cash Reserve: 20%** — Buffer for June macro disruption, waiting for better entry windows
+<script>
+var DATA={
+"2026-06-04":{dates:{cn:"2026年6月4日 · 周四",en:"Thursday, June 4, 2026"},views:[
+{seq:"01",time:"08:15 EST",topic:{cn:"AI基础设施",en:"AI Infrastructure"},sentiment:"bullish",tags:{cn:["超配","买入"],en:["Overweight","Buy"]},body:{cn:"AI基础设施板块进入新一轮资本开支超级周期。超大规模云厂商（Microsoft Azure、Google Cloud、AWS）在Q2的GPU集群采购量显著加速，三家合计CapEx指引环比提升约35%。这一趋势直接利好上游芯片和基础设施供应链。\n\n重点关注NVDA GB200 NVL72机架的交付节奏——当前积压订单已延伸至2027年Q1，供需缺口将维持高位。AVGO的定制ASIC（特别是Google TPU和Meta MTIA）已开始侵蚀NVDA在推理市场的份额，预计FY2026 AVGO AI营收贡献将突破200亿美元。\n\n数据中心电力和冷却基础设施成为最紧迫的制约瓶颈。Vertiv（VRT）、Eaton（ETN）、Schneider Electric等传统基础设施供应商的估值重评空间仍被市场低估。建议在AI产业链中维持满仓配置，短期以NVDA+AVGO为核心双引擎。",en:"The AI infrastructure sector is entering a new capital expenditure supercycle. Hyperscalers (Microsoft Azure, Google Cloud, AWS) significantly accelerated GPU cluster procurement in Q2, with combined CapEx guidance up ~35% quarter-over-quarter. This directly benefits upstream chip and infrastructure supply chains.\n\nKey focus: NVDA GB200 NVL72 rack delivery pace — current backlog extends to Q1 2027, keeping supply/demand gap elevated. AVGO's custom ASICs (specifically Google TPU and Meta MTIA) have begun eroding NVDA's share in inference markets; FY2026 AVGO AI revenue contribution is projected to exceed $20B.\n\nData center power and cooling infrastructure has become the most critical bottleneck. The valuation re-rating potential of traditional infra suppliers — Vertiv (VRT), Eaton (ETN), Schneider Electric — remains underappreciated by the market. Recommend maintaining full allocation across AI supply chain, with NVDA+AVGO as the core dual-engine for near-term positioning."}},
+{seq:"02",time:"08:47 EST",topic:{cn:"半导体",en:"Semiconductors"},sentiment:"bullish",tags:{cn:["AVGO","定制ASIC","超配"],en:["AVGO","Custom ASIC","Overweight"]},body:{cn:"AVGO定制芯片业务是当前半导体板块中确定性最高的结构性机会。两大定制ASIC客户（Google、Meta）均已公开承诺大幅扩大芯片采购规模，形成多年期的稳定收入能见度。\n\nAVGO的护城河在于其独特的co-design能力——能深度嵌入客户的系统架构，形成极高的迁移成本。相比NVDA的通用GPU，定制ASIC在特定推理工作负载下性能功耗比提升约3-5倍，这是云厂商为何愿意支付溢价的根本原因。\n\n从估值角度看，AVGO当前24倍NTM P/E相对其25-28%的EPS增速中枢而言并不贵，PEG约0.9x。FY2026财报季（9月）将是重要催化剂。建议以当前价格积极买入，目标价$250，止损设于$195。",en:"AVGO's custom silicon business represents the highest-conviction structural opportunity in semiconductors right now. Both major custom ASIC customers (Google, Meta) have publicly committed to significantly scaling chip procurement, providing multi-year revenue visibility.\n\nAVGO's moat lies in its unique co-design capability — deeply embedded in customers' system architecture, creating very high switching costs. Compared to NVDA's general-purpose GPUs, custom ASICs deliver ~3-5x better performance-per-watt for specific inference workloads, which is why hyperscalers are willing to pay a premium.\n\nValuation: AVGO's current 24x NTM P/E is not expensive relative to its 25-28% EPS growth trajectory, implying a PEG of ~0.9x. FY2026 earnings season (September) is a major catalyst. Recommend aggressive accumulation at current levels, target price $250, stop-loss at $195."}},
+{seq:"03",time:"09:12 EST",topic:{cn:"网络安全",en:"Cybersecurity"},sentiment:"neutral",tags:{cn:["CRWD","关注","等待回调"],en:["CRWD","Watch","Wait for Pullback"]},body:{cn:"CRWD在端点安全和云安全领域的AI原生优势是真实且持续扩大的。Falcon平台的AR（Annual Recurring Revenue）模组渗透率持续提升，净留存率维持在120%以上，客户粘性极强。\n\n然而，当前估值是最大的约束：CRWD交易在约16x NTM EV/Revenue和约85x NTM P/E，已充分反映增长预期。对于风险厌恶型投资者，当前位置的赔率并不理想。\n\n等待两个更好的入场窗口：1）宏观情绪收紧导致的杀估值，目标等待回撤至$300-320区间；2）Q3财报（11月）超预期后的动量确认。对于长期持有者，可维持现有仓位。对于想建仓的新资金，建议等待。\n\n同时关注竞争格局：MSFT Defender的能力提升是长期风险点，需要持续跟踪。",en:"CRWD's AI-native advantages in endpoint and cloud security are real and continue to expand. Falcon platform AR (Annual Recurring Revenue) module penetration is rising steadily, with net retention above 120% — exceptional customer stickiness.\n\nHowever, valuation is the binding constraint: CRWD trades at ~16x NTM EV/Revenue and ~85x NTM P/E, which fully reflects growth expectations. For risk-averse investors, current risk/reward is not compelling.\n\nTwo better entry windows: 1) Macro-driven multiple compression — target a pullback to the $300-320 range; 2) Post-Q3 earnings (November) momentum confirmation on an upside surprise. Long-term holders can maintain positions. New capital should wait.\n\nAlso monitor competitive dynamics: MSFT Defender's improving capabilities represent a long-term risk factor requiring ongoing tracking."}},
+{seq:"04",time:"09:45 EST",topic:{cn:"宏观与利率",en:"Macro & Rates"},sentiment:"neutral",tags:{cn:["CPI","FOMC","情绪扰动"],en:["CPI","FOMC","Sentiment Risk"]},body:{cn:"6月宏观日历密集，需要格外警惕情绪面的短期扰动：\n\n**6月11日 — 5月CPI数据**：市场共识预期核心CPI环比+0.3%，若实际数据超预期（尤其是服务通胀粘性），可能触发利率上行预期，对高倍数成长股构成估值压力。\n\n**6月11-12日 — FOMC会议**：市场当前定价9月降息概率约65%。若鲍威尔在新闻发布会上发出\"更长时间更高利率\"的信号，将对NDX估值中枢造成5-8%的压制。\n\n**操作建议**：不建议在6月11日前后大幅加仓。持有核心仓位（NVDA/AVGO/CRWD），适当降低资金使用率至80%，保留20%现金应对波动性带来的买入机会。宏观扰动是暂时的，AI产业趋势不变。\n\n**值得注意的对冲工具**：TLT反向ETF（TBF）或SPY Put spread可以对冲短期系统性风险，成本相对低廉。",en:"The June macro calendar is dense — monitor short-term sentiment disruptions closely:\n\n**June 11 — May CPI Data**: Market consensus expects core CPI +0.3% m/m. An upside surprise (especially persistent services inflation) could trigger rate-rise expectations, pressuring high-multiple growth stock valuations.\n\n**June 11-12 — FOMC Meeting**: Market currently prices ~65% probability of September rate cut. If Powell signals \"higher for longer\" at the press conference, expect 5-8% compression on NDX valuation multiples.\n\n**Tactical guidance**: Avoid significant position increases around June 11. Hold core positions (NVDA/AVGO/CRWD), reduce capital utilization to ~80%, retain 20% cash to deploy on volatility-driven opportunities. Macro disruptions are temporary; the AI secular trend is intact.\n\n**Hedging tools worth considering**: TLT inverse ETF (TBF) or SPY put spreads offer cost-effective near-term systemic risk hedges."}},
+{seq:"05",time:"10:20 EST",topic:{cn:"云计算",en:"Cloud Computing"},sentiment:"bullish",tags:{cn:["MSFT","AMZN","GOOGL","超配"],en:["MSFT","AMZN","GOOGL","Overweight"]},body:{cn:"三大云厂商的AI货币化进程在Q2出现了明显加速的信号。\n\n**Microsoft Azure**：Copilot M365商业套件渗透率超预期，企业客户AI附加席位采用率环比提升约40%。Azure AI Foundry的API调用量在Q2同比增长超过3倍，预计带动Azure增速重新加速至30%+。MSFT是AI货币化最清晰、可见度最高的标的之一。\n\n**Google Cloud**：Gemini API的外部调用量在Q1财报中已超预期，Vertex AI平台上的企业工作负载迁移加速。YouTube广告+Cloud的双引擎组合使GOOGL估值在大型科技股中最具吸引力，当前约18x NTM P/E，PEG <0.7x。\n\n**AWS**：Bedrock平台已跑出显著的企业客户粘性，Q2 re:Invent之前AI服务收入贡献将首次超过10%。\n\n综合来看，云厂商是AI产业链中兼具增长确定性和估值合理性的核心配置，建议三家均超配。",en:"All three major cloud providers showed clear signs of accelerating AI monetization in Q2.\n\n**Microsoft Azure**: Copilot M365 commercial suite penetration exceeded expectations, with enterprise AI add-on seat adoption up ~40% q/q. Azure AI Foundry API call volume grew 3x+ y/y in Q2, expected to re-accelerate Azure growth to 30%+. MSFT remains one of the clearest, highest-visibility AI monetization plays.\n\n**Google Cloud**: Gemini API external call volume already beat expectations in Q1 earnings; enterprise workload migration onto Vertex AI is accelerating. The YouTube ads + Cloud dual-engine combination makes GOOGL the most attractively valued mega-cap tech, currently ~18x NTM P/E with PEG <0.7x.\n\n**AWS**: Bedrock platform is showing meaningful enterprise stickiness; AI services revenue contribution will exceed 10% for the first time before Q2 re:Invent.\n\nOverall, cloud providers offer the best combination of growth certainty and reasonable valuation in the AI supply chain. Recommend overweight across all three."}},
+{seq:"06",time:"11:05 EST",topic:{cn:"能源与基础设施",en:"Energy & Infrastructure"},sentiment:"bullish",tags:{cn:["VRT","ETN","数据中心电力","主题性机会"],en:["VRT","ETN","DC Power","Thematic"]},body:{cn:"数据中心电力需求正在创造一个被主流市场系统性低估的投资机会——传统能源基础设施供应商的结构性重评。\n\n核心数据：全球数据中心电力消耗预计到2030年将达到约1000 TWh，约占全球总用电量的3.5%。其中，AI推理工作负载是增长最快的部分，液冷系统的采用将从当前的不足5%上升至2027年的约25%。\n\n**Vertiv（VRT）**：液冷和热管理解决方案的直接受益者，订单积压已达历史高位，FY2026收入指引上调可能性大。但需注意当前估值已有所扩张（约35x NTM P/E），需要持续的业绩兑现来支撑。\n\n**核电的重新崛起**：微软/Google与核电运营商签署的长期PPA合同预示着核电作为数据中心\"清洁基荷电力\"的战略地位提升。CEG（Constellation Energy）、VST（Vistra）值得关注。\n\n建议在AI基础设施配置中纳入5-10%的能源基础设施敞口，作为对冲AI算力板块高估值的防御性补充。",en:"Data center power demand is creating a systematically underappreciated investment opportunity in the structural re-rating of traditional energy infrastructure suppliers.\n\nKey data: Global data center power consumption is projected to reach ~1,000 TWh by 2030, roughly 3.5% of total global electricity. AI inference workloads are the fastest-growing segment; liquid cooling adoption will rise from under 5% today to ~25% by 2027.\n\n**Vertiv (VRT)**: Direct beneficiary of liquid cooling and thermal management; order backlog at all-time highs; FY2026 revenue guidance upside likely. Note: valuation has expanded (~35x NTM P/E), requiring continued execution to sustain.\n\n**Nuclear power's resurgence**: Long-term PPA contracts between Microsoft/Google and nuclear operators signal nuclear power's rising strategic importance as \"clean baseload\" for data centers. CEG (Constellation Energy) and VST (Vistra) merit attention.\n\nRecommend allocating 5-10% of AI infrastructure exposure to energy infrastructure as a defensive complement hedging against elevated valuations in the AI compute segment."}},
+{seq:"07",time:"13:30 EST",topic:{cn:"组合管理",en:"Portfolio Management"},sentiment:"info",tags:{cn:["仓位管理","风险控制","操作指引"],en:["Position Sizing","Risk","Tactical"]},body:{cn:"当前组合状态回顾与仓位指引（截至2026年6月4日）：\n\n**核心仓位（合计约55%）**\n- NVDA：20% — AI算力核心，持续持有，不追高\n- AVGO：15% — 定制ASIC主线，逢回调加仓\n- MSFT：12% — AI货币化确定性最高，长期持有\n- GOOGL：8% — 低估值补涨逻辑，适量配置\n\n**主题卫星仓位（合计约25%）**\n- VRT：5% — AI基础设施能源主题\n- CEG：3% — 核电/清洁基荷电力\n- ARM：7% — AI边缘推理/移动端算力，长期逻辑清晰但波动大\n- ANET：5% — AI数据中心网络，确定性强\n- DELL：5% — AI服务器整机受益，估值便宜\n\n**现金储备：20%** — 应对6月宏观扰动，等待更好的买入窗口\n\n**风险纪律**：任何单一标的不超过20%上限；组合Beta控制在1.2以内；止损线设置在组合回撤-10%时强制减仓至防御配置。\n\n下次仓位回顾节点：6月12日（FOMC后）。",en:"Current portfolio status review and positioning guide (as of June 4, 2026):\n\n**Core Holdings (~55% total)**\n- NVDA: 20% — AI compute core, hold, no chasing\n- AVGO: 15% — Custom ASIC primary theme, add on pullbacks\n- MSFT: 12% — Highest AI monetization certainty, long-term hold\n- GOOGL: 8% — Low-valuation catch-up thesis, moderate allocation\n\n**Thematic Satellite Positions (~25% total)**\n- VRT: 5% — AI infrastructure energy theme\n- CEG: 3% — Nuclear / clean baseload power\n- ARM: 7% — AI edge inference / mobile compute, clear long-term logic but high volatility\n- ANET: 5% — AI datacenter networking, high conviction\n- DELL: 5% — AI server beneficiary, cheap valuation\n\n**Cash Reserve: 20%** — Buffer for June macro disruption, waiting for better entry windows\n\n**Risk discipline**: No single position >20%; portfolio Beta ≤ 1.2; mandatory de-risking to defensive allocation if portfolio drawdown reaches -10%.\n\nNext portfolio review checkpoint: June 12 (post-FOMC)."}}
+]},
+"2026-06-03":{dates:{cn:"2026年6月3日 · 周三",en:"Wednesday, June 3, 2026"},views:[
+{seq:"01",time:"08:30 EST",topic:{cn:"周度展望",en:"Weekly Outlook"},sentiment:"bullish",tags:{cn:["本周重点","宏观日历"],en:["Weekly Focus","Macro Calendar"]},body:{cn:"进入6月第一周，市场情绪延续5月的温和偏多格局。VIX在15以下运行，标普500维持在5300点上方，技术面健康。\n\n本周重点关注：周三（6月4日）将有多位FOMC委员发表讲话，重点关注Waller和Kashkari的措辞是否出现鸽派松动。就业市场数据持续强劲（5月非农预期+185k），这是推迟降息的主要论据，但这对权益市场并非坏事——软着陆场景下，盈利增长才是核心驱动。\n\nAI股票在5月积累了大量浮盈，短期存在技术性整理需求。但基本面趋势不变，任何回调都是机会而非风险。\n\n本周关注名单：NVDA（B100量产进展消息）、SMCI（订单恢复数据）、CRM（Salesforce Q1财报，AI收入披露质量）。",en:"Entering the first week of June, market sentiment extends May's moderately bullish posture. VIX remains below 15, S&P 500 holding above 5,300, technically healthy.\n\nThis week's key focus: Wednesday (June 4) features multiple FOMC speakers — watch for dovish language shifts from Waller and Kashkari. Labor market data remains strong (May NFP estimate +185k), the primary argument for rate cut delays, but this is not bad for equities — in a soft-landing scenario, earnings growth is the primary driver.\n\nAI stocks have accumulated significant paper gains through May; some technical consolidation is needed short-term. But fundamental trends are unchanged — any pullback is opportunity, not risk.\n\nWatch list: NVDA (B100 mass production updates), SMCI (order recovery data), CRM (Salesforce Q1 earnings, quality of AI revenue disclosure)."}},
+{seq:"02",time:"09:15 EST",topic:{cn:"软件赛道",en:"Software"},sentiment:"bullish",tags:{cn:["CRM","NOW","AI软件","关注"],en:["CRM","NOW","AI Software","Watch"]},body:{cn:"AI原生软件赛道的货币化拐点正在到来。区别于\"AI概念\"炒作阶段，当前能够清晰展示AI功能付费意愿的软件公司将获得估值溢价。\n\n**Salesforce（CRM）**：Einstein AI的agent层开始产生实质性ARR，Agentforce产品的早期客户反馈积极。Q1财报关注cRPO增速是否重新加速至15%+，以及Einstein席位的付费渗透率数据。当前估值约23x NTM FCF，合理偏贵，但基本面改善趋势明确。\n\n**ServiceNow（NOW）**：企业AI工作流自动化的最佳纯播标的，Now Assist套件渗透率快速提升。FY2026指引上调概率高，近期整理后具备较好的介入时机。目标价区间$1,000-1,050。\n\n**注意规避**：早期AI软件公司（非盈利期）在当前利率环境下估值压力较大，建议优先选择有正向FCF的成熟软件公司。",en:"The monetization inflection point for AI-native software is arriving. Distinguishing from the \"AI concept\" hype phase, software companies that can clearly demonstrate willingness-to-pay for AI features will command valuation premiums.\n\n**Salesforce (CRM)**: Einstein AI's agent layer is beginning to generate meaningful ARR; early customer feedback on Agentforce is positive. Q1 earnings: watch for cRPO growth re-accelerating to 15%+, and paid penetration rate for Einstein seats. Current valuation ~23x NTM FCF — fair to slightly expensive, but improvement trend is clear.\n\n**ServiceNow (NOW)**: Best pure-play for enterprise AI workflow automation; Now Assist suite penetration rising rapidly. High probability of FY2026 guidance raise; recent consolidation creates a reasonable entry opportunity. Target range $1,000-1,050.\n\n**Avoid**: Early-stage AI software companies (pre-profitability) face significant valuation pressure in the current rate environment. Prefer established software companies with positive FCF."}}
+]}};
 
-**Risk discipline**: No single position >20%; portfolio Beta ≤ 1.2; mandatory de-risking to defensive allocation if portfolio drawdown reaches -10%.
+var L='cn',D='2026-06-04',K=Object.keys(DATA).sort(function(a,b){return b.localeCompare(a)});
 
-Next portfolio review checkpoint: June 12 (post-FOMC).`
-        }
-      }
-    ]
-  },
-  "2026-06-03": {
-    dates: { cn: "2026年6月3日 · 周三", en: "Wednesday, June 3, 2026" },
-    views: [
-      {
-        seq: "01", time: "08:30 EST",
-        topic: { cn: "周度展望", en: "Weekly Outlook" },
-        sentiment: "bullish",
-        tags: { cn: ["本周重点", "宏观日历"], en: ["Weekly Focus", "Macro Calendar"] },
-        body: {
-          cn: `进入6月第一周，市场情绪延续5月的温和偏多格局。VIX在15以下运行，标普500维持在5300点上方，技术面健康。
+function h(a,b){return a.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'</p><p>').replace(/^/,'<p>').replace(/$/,'</p>')}
 
-本周重点关注：周三（6月4日）将有多位FOMC委员发表讲话，重点关注Waller和Kashkari的措辞是否出现鸽派松动。就业市场数据持续强劲（5月非农预期+185k），这是推迟降息的主要论据，但这对权益市场并非坏事——软着陆场景下，盈利增长才是核心驱动。
-
-AI股票在5月积累了大量浮盈，短期存在技术性整理需求。但基本面趋势不变，任何回调都是机会而非风险。
-
-本周关注名单：NVDA（B100量产进展消息）、SMCI（订单恢复数据）、CRM（Salesforce Q1财报，AI收入披露质量）。`,
-          en: `Entering the first week of June, market sentiment extends May's moderately bullish posture. VIX remains below 15, S&P 500 holding above 5,300, technically healthy.
-
-This week's key focus: Wednesday (June 4) features multiple FOMC speakers — watch for dovish language shifts from Waller and Kashkari. Labor market data remains strong (May NFP estimate +185k), the primary argument for rate cut delays, but this is not bad for equities — in a soft-landing scenario, earnings growth is the primary driver.
-
-AI stocks have accumulated significant paper gains through May; some technical consolidation is needed short-term. But fundamental trends are unchanged — any pullback is opportunity, not risk.
-
-Watch list: NVDA (B100 mass production updates), SMCI (order recovery data), CRM (Salesforce Q1 earnings, quality of AI revenue disclosure).`
-        }
-      },
-      {
-        seq: "02", time: "09:15 EST",
-        topic: { cn: "软件赛道", en: "Software" },
-        sentiment: "bullish",
-        tags: { cn: ["CRM", "NOW", "AI软件", "关注"], en: ["CRM", "NOW", "AI Software", "Watch"] },
-        body: {
-          cn: `AI原生软件赛道的货币化拐点正在到来。区别于"AI概念"炒作阶段，当前能够清晰展示AI功能付费意愿的软件公司将获得估值溢价。
-
-**Salesforce（CRM）**：Einstein AI的agent层开始产生实质性ARR，Agentforce产品的早期客户反馈积极。Q1财报关注cRPO增速是否重新加速至15%+，以及Einstein席位的付费渗透率数据。当前估值约23x NTM FCF，合理偏贵，但基本面改善趋势明确。
-
-**ServiceNow（NOW）**：企业AI工作流自动化的最佳纯播标的，Now Assist套件渗透率快速提升。FY2026指引上调概率高，近期整理后具备较好的介入时机。目标价区间$1,000-1,050。
-
-**注意规避**：早期AI软件公司（非盈利期）在当前利率环境下估值压力较大，建议优先选择有正向FCF的成熟软件公司。`,
-          en: `The monetization inflection point for AI-native software is arriving. Distinguishing from the "AI concept" hype phase, software companies that can clearly demonstrate willingness-to-pay for AI features will command valuation premiums.
-
-**Salesforce (CRM)**: Einstein AI's agent layer is beginning to generate meaningful ARR; early customer feedback on Agentforce is positive. Q1 earnings: watch for cRPO growth re-accelerating to 15%+, and paid penetration rate for Einstein seats. Current valuation ~23x NTM FCF — fair to slightly expensive, but improvement trend is clear.
-
-**ServiceNow (NOW)**: Best pure-play for enterprise AI workflow automation; Now Assist suite penetration rising rapidly. High probability of FY2026 guidance raise; recent consolidation creates a reasonable entry opportunity. Target range $1,000-1,050.
-
-**Avoid**: Early-stage AI software companies (pre-profitability) face significant valuation pressure in the current rate environment. Prefer established software companies with positive FCF.`
-        }
-      }
-    ]
-  }
-};
-
-// ═══════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════
-let currentLang = 'cn';
-let currentDate = '2026-06-04';
-const dateKeys = Object.keys(DATA).sort((a,b) => b.localeCompare(a));
-
-// ═══════════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════════
-function renderHistory() {
-  const list = document.getElementById('historyList');
-  list.innerHTML = dateKeys.map(dk => {
-    const d = DATA[dk];
-    const isActive = dk === currentDate;
-    const dispDate = dk.replace(/(\d{4})-(\d{2})-(\d{2})/, '$2.$3');
-    const dow = new Date(dk).toLocaleDateString('en', {weekday:'short'});
-    return `<div class="history-item ${isActive ? 'active' : ''}" onclick="selectDate('${dk}')">
-      <div class="history-dot ${isActive ? 'green' : 'muted'}"></div>
-      <div class="history-date">${dispDate} ${dow}</div>
-      <div class="history-count">${d.views.length}</div>
-    </div>`;
-  }).join('');
+function R(){
+var o=DATA[D],i=document.getElementById('historyList');
+i.innerHTML=K.map(function(k){
+var d=DATA[k],x=k===D;
+return'<div class="history-item'+(x?' active':'')+'" onclick="S(\''+k+'\')"><div class="history-dot '+(x?'green':'muted')+'"></div><div class="history-date">'+k.replace(/(\d{4})-(\d{2})-(\d{2})/,'$2.$3')+' '+new Date(k).toLocaleDateString('en',{weekday:'short'})+'</div><div class="history-count">'+d.views.length+'</div></div>';
+}).join('');
+document.getElementById('sidebarDate').textContent=D.replace(/(\d{4})-(\d{2})-(\d{2})/,'$1.$2.$3');
+document.getElementById('topbarDate').textContent=o.dates[L];
+var b=document.getElementById('langBadge'),t=document.getElementById('langBadgeText');
+b.className='topbar-badge '+(L==='cn'?'lang-cn':'lang-en');
+t.textContent=L==='cn'?'中文':'English';
+document.getElementById('viewCount').textContent=o.views.length;
+var s=document.getElementById('viewsStream');
+if(!o||!o.views.length){s.innerHTML='<div class="empty-state"><div style="font-size:40px;opacity:.3;margin-bottom:8px">&#9711;</div><div style="font-size:14px;color:var(--text-muted)">'+(L==='cn'?'暂无观点数据':'No views for this date')+'</div></div>';return}
+s.innerHTML=o.views.map(function(v){
+var bd=v.body[L],tp=v.topic[L],tg=v.tags[L];
+var tc={'\u8d85\u914d':'green','\u4e70\u5165':'green','Overweight':'green','Buy':'green','NVDA':'blue','AVGO':'blue','MSFT':'blue','AMZN':'blue','GOOGL':'blue','CRM':'blue','NOW':'blue','VRT':'blue','ETN':'blue','\u6570\u636e\u4e2d\u5fc3\u7535\u529b':'amber','\u5173\u6ce8':'','Watch':'','\u7b49\u5f85\u56de\u8c03':'','\u98ce\u9669':'red','Risk':'red','\u672c\u5468\u91cd\u70b9':'','Weekly Focus':'','\u5b8f\u89c2\u65e5\u5386':'','Macro Calendar':'','CPI':'amber','FOMC':'amber','\u60c5\u7eea\u6270\u52a8':'amber','Sentiment Risk':'amber','\u4ed3\u4f4d\u7ba1\u7406':'','Position Sizing':'','\u98ce\u9669\u63a7\u5236':'red','\u64cd\u4f5c\u6307\u5f15':'','Tactical':'','\u5b9a\u5236ASIC':'blue','Custom ASIC':'blue','AI\u8f6f\u4ef6':'','AI Software':'','\u4e3b\u9898\u6027\u673a\u4f1a':'green','Thematic':'green'};
+var th=tg.map(function(t){return'<span class="tag'+(tc[t]?' '+tc[t]:'')+'">'+t+'</span>'}).join('');
+return'<div class="view-item '+v.sentiment+'"><div class="view-item-header"><div class="view-item-meta"><span class="view-seq">'+v.seq+'</span><span class="view-topic-tag">'+tp+'</span></div><div class="view-time">'+v.time+'</div></div><div class="view-body">'+bd.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')+'</div><div class="view-item-footer">'+th+'</div></div>';
+}).join('');
+document.getElementById('btnCN').className='lang-btn'+(L==='cn'?' active':'');
+document.getElementById('btnEN').className='lang-btn'+(L==='en'?' active':'');
 }
 
-function renderTopbar() {
-  const d = DATA[currentDate];
-  document.getElementById('sidebarDate').textContent = currentDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1.$2.$3');
-  document.getElementById('topbarDate').textContent = d.dates[currentLang];
-  const badge = document.getElementById('langBadge');
-  const badgeText = document.getElementById('langBadgeText');
-  if (currentLang === 'cn') {
-    badge.className = 'topbar-badge lang-cn';
-    badgeText.textContent = '中文';
-  } else {
-    badge.className = 'topbar-badge lang-en';
-    badgeText.textContent = 'English';
-  }
-  document.getElementById('viewCount').textContent = d.views.length;
-}
-
-function renderViews() {
-  const stream = document.getElementById('viewsStream');
-  const d = DATA[currentDate];
-  if (!d || !d.views.length) {
-    stream.innerHTML = `<div class="empty-state"><div class="empty-state-icon">○</div><div class="empty-state-text">${currentLang === 'cn' ? '暂无观点数据' : 'No views for this date'}</div></div>`;
-    return;
-  }
-  stream.innerHTML = d.views.map(v => {
-    const body = v.body[currentLang];
-    const topic = v.topic[currentLang];
-    const tags = v.tags[currentLang];
-    // Format body: bold **text** → <strong>text</strong>
-    const formattedBody = body.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    const tagColors = { '超配':'green','买入':'green','Overweight':'green','Buy':'green','NVDA':'blue','AVGO':'blue','MSFT':'blue','GOOGL':'blue','CRM':'blue','NOW':'blue','VRT':'amber','ETN':'amber','数据中心电力':'amber','关注':'','Watch':'','风险':'red','Risk':'red','宏观日历':'','Macro Calendar':'' };
-    const tagHtml = tags.map(t => `<span class="tag ${tagColors[t]||''}">${t}</span>`).join('');
-    return `<div class="view-item ${v.sentiment}">
-      <div class="view-item-header">
-        <div class="view-item-meta">
-          <span class="view-seq">${v.seq}</span>
-          <span class="view-topic-tag">${topic}</span>
-        </div>
-        <div class="view-time">${v.time}</div>
-      </div>
-      <div class="view-body">${formattedBody}</div>
-      <div class="view-item-footer">${tagHtml}</div>
-    </div>`;
-  }).join('');
-}
-
-function render() {
-  renderHistory();
-  renderTopbar();
-  renderViews();
-}
-
-// ═══════════════════════════════════════════════
-// ACTIONS
-// ═══════════════════════════════════════════════
-function selectDate(dk) {
-  currentDate = dk;
-  document.getElementById('contentArea').scrollTop = 0;
-  render();
-}
-
-function changeDate(dir) {
-  const idx = dateKeys.indexOf(currentDate);
-  const newIdx = idx - dir; // dateKeys sorted desc, so -1 = newer, +1 = older
-  if (newIdx >= 0 && newIdx < dateKeys.length) {
-    selectDate(dateKeys[newIdx]);
-  }
-}
-
-function setLang(lang) {
-  currentLang = lang;
-  document.getElementById('btnCN').className = 'lang-btn' + (lang === 'cn' ? ' active' : '');
-  document.getElementById('btnEN').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
-  render();
-}
-
-function scrollToTop() {
-  document.getElementById('contentArea').scrollTop = 0;
-}
-
-// Scroll to top button visibility
-document.getElementById('contentArea').addEventListener('scroll', function() {
-  const btn = document.getElementById('scrollTopBtn');
-  btn.classList.toggle('visible', this.scrollTop > 200);
-});
-
-// ═══════════════════════════════════════════════
-// DEBUG — visible on-page diagnostics
-// ═══════════════════════════════════════════════
-(function() {
-  var dbg = document.getElementById('debugInfo');
-  if (dbg) dbg.textContent = 'JS loaded, DATA keys: ' + (typeof DATA !== 'undefined' ? Object.keys(DATA).length : 'UNDEFINED');
-})();
-
-// ═══════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════
-try {
-  render();
-} catch(e) {
-  var dbg2 = document.getElementById('debugInfo');
-  if (dbg2) dbg2.textContent = 'RENDER ERROR: ' + e.message + ' | line:' + e.lineNumber;
-  console.error('Render failed:', e);
-}
+function S(k){D=k;document.getElementById('contentArea').scrollTop=0;R()}
+function C(d){var i=K.indexOf(D),n=i-d;if(n>=0&&n<K.length)S(K[n])}
+function T(l){L=l;R()}
+function scrollToTop(){document.getElementById('contentArea').scrollTop=0}
+document.getElementById('contentArea').addEventListener('scroll',function(){document.getElementById('scrollTopBtn').classList.toggle('visible',this.scrollTop>200)});
+R();
 </script>
-
 </body>
 </html>
