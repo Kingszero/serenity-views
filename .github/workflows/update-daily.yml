@@ -1,0 +1,65 @@
+name: Daily Serenity Views Update
+
+on:
+  schedule:
+    # 每天北京时间 09:00 (UTC 01:00) 自动运行
+    - cron: '0 1 * * *'
+    # 每天北京时间 21:00 (UTC 13:00) 再跑一次，确保晚间发布也被抓取
+    - cron: '0 13 * * *'
+  # 支持手动触发
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape-and-update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: |
+          cd scraper
+          npm install
+          npx playwright install chromium --with-deps 2>/dev/null || true
+
+      - name: Scrape X.com @aleabitoreddit
+        run: |
+          cd scraper
+          node auto_scraper.mjs
+        env:
+          X_SCRAPER_DEBUG: '1'
+
+      - name: Check for changes
+        id: check
+        run: |
+          if [ -f ../data.js ]; then
+            echo "DATA_EXISTS=true" >> $GITHUB_OUTPUT
+          else
+            echo "DATA_EXISTS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push if data changed
+        if: steps.check.outputs.DATA_EXISTS == 'true'
+        run: |
+          git config user.name "Serenity Bot"
+          git config user.email "bot@serenity-views.dev"
+          
+          # Check if data.js actually changed
+          if git diff --quiet data.js 2>/dev/null; then
+            echo "No changes to data.js, skipping commit"
+            exit 0
+          fi
+          
+          git add data.js
+          git commit -m "auto: update views data [$(date +%Y-%m-%d)]"
+          git push
