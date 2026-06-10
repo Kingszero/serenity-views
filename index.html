@@ -434,6 +434,7 @@
     </div>
     <div class="topbar-right">
       <div class="count-badge">共 <strong id="viewCount">0</strong> 条观点</div>
+      <div id="debugInfo" style="font-size:11px;color:#EF4444;max-width:300px;text-align:right;line-height:1.4;">WAITING...</div>
     </div>
   </div>
 
@@ -804,9 +805,24 @@ document.getElementById('contentArea').addEventListener('scroll', function() {
 });
 
 // ═══════════════════════════════════════════════
+// DEBUG — visible on-page diagnostics
+// ═══════════════════════════════════════════════
+(function() {
+  var dbg = document.getElementById('debugInfo');
+  if (dbg) dbg.textContent = 'JS loaded, DATA keys: ' + (typeof DATA !== 'undefined' ? Object.keys(DATA).length : 'UNDEFINED');
+})();
+
+// ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
-render();
+try {
+  render();
+} catch(e) {
+  var dbg2 = document.getElementById('debugInfo');
+  if (dbg2) dbg2.textContent = 'RENDER ERROR: ' + e.message + ' | line:' + e.lineNumber;
+  console.error('Render failed:', e);
+}
 </script>
+
 </body>
 </html>
